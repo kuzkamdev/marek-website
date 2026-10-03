@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test';
 const pages = [
   { path: '/', lang: 'pl', langName: 'Polski' },
   { path: '/en/', lang: 'en', langName: 'English' },
+  { path: '/cv/', lang: 'pl', langName: 'Polski' },
+  { path: '/en/cv/', lang: 'en', langName: 'English' },
 ];
 
 const viewports = [

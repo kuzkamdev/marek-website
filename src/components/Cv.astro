@@ -1,0 +1,236 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { profiles } from '../data/profile';
+import { getLang, useTranslations } from '../i18n/utils';
+import CvHeader from './cv/CvHeader.astro';
+import CvSection from './cv/CvSection.astro';
+import Tags from './cv/Tags.astro';
+
+const lang = getLang(Astro.currentLocale);
+const t = useTranslations(lang);
+const p = profiles[lang];
+---
+
+<article class="cv">
+  <nav class="cv-actions" aria-label="CV">
+    <a href={getRelativeLocaleUrl(lang)}>← {t('cv.back')}</a>
+    <button type="button" data-print>
+      {t('cv.print')}
+    </button>
+  </nav>
+
+  <CvHeader
+    name={p.name}
+    role={p.role}
+    summary={p.summary}
+    location={p.location}
+    photoAlt={t('cv.photoAlt')}
+  />
+
+  <div class="cv-grid">
+    <div class="cv-main">
+      <CvSection title={t('cv.experience')} id="experience">
+        {p.experience.map((job) => (
+          <div class="item">
+            <h3>
+              <a href={job.url}>{job.company}</a>
+            </h3>
+            <ul class="plain">
+              {job.roles.map((r) => (
+                <li>
+                  <strong>{r.title}</strong> <span class="muted">{r.period}</span>
+                </li>
+              ))}
+            </ul>
+            <ul>
+              {job.highlights.map((h) => (
+                <li>{h}</li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </CvSection>
+
+      <CvSection title={t('cv.projects')} id="projects">
+        {p.projects.map((project) => (
+          <div class="item">
+            <h3>{project.title}</h3>
+            <p>{project.description}</p>
+            <Tags items={project.tags} />
+          </div>
+        ))}
+      </CvSection>
+    </div>
+
+    <aside class="cv-side">
+      <CvSection title={t('cv.contact')} id="contact">
+        <ul class="plain">
+          {p.contact.map((c) => (
+            <li>
+              <span class="muted">{c.label}:</span> <a href={c.href}>{c.text}</a>
+            </li>
+          ))}
+        </ul>
+      </CvSection>
+
+      <CvSection title={t('cv.skills')} id="skills">
+        <Tags items={p.skills} />
+      </CvSection>
+
+      <CvSection title={t('cv.certificates')} id="certificates">
+        <ul class="plain">
+          {p.certificates.map((c) => (
+            <li>
+              {c.name} <span class="muted">{c.date}</span>
+            </li>
+          ))}
+        </ul>
+      </CvSection>
+
+      <CvSection title={t('cv.education')} id="education">
+        <ul class="plain">
+          {p.education.map((e) => (
+            <li>
+              <strong>{e.field}</strong>
+              <br />
+              {e.school} <span class="muted">{e.period}</span>
+            </li>
+          ))}
+        </ul>
+      </CvSection>
+
+      <CvSection title={t('cv.languages')} id="languages">
+        <ul class="plain">
+          {p.languages.map((l) => (
+            <li>
+              {l.name} <span class="muted">{l.level}</span>
+            </li>
+          ))}
+        </ul>
+      </CvSection>
+
+      <CvSection title={t('cv.hobbies')} id="hobbies">
+        <ul class="plain hobbies">
+          {p.hobbies.map((h) => (
+            <li>
+              <span aria-hidden="true">{h.icon}</span> {h.name}
+            </li>
+          ))}
+        </ul>
+      </CvSection>
+    </aside>
+  </div>
+</article>
+
+<script>
+  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+</script>
+
+<style>
+  .cv {
+    max-width: 64rem;
+    margin: 0 auto;
+    padding: 0 var(--space) calc(var(--space) * 2);
+    display: grid;
+    gap: calc(var(--space) * 1.5);
+  }
+
+  .cv-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .cv-actions button {
+    font: inherit;
+    padding: 0.4em 0.9em;
+    border: 1px solid var(--color-accent);
+    border-radius: 0.4rem;
+    background: transparent;
+    color: var(--color-accent);
+    cursor: pointer;
+  }
+
+  .cv-grid,
+  .cv-main,
+  .cv-side {
+    display: grid;
+    gap: calc(var(--space) * 1.5);
+    align-content: start;
+  }
+
+  .item + .item {
+    margin-top: 1.25rem;
+  }
+
+  h3 {
+    font-size: 1.05rem;
+    margin: 0 0 0.35em;
+  }
+
+  p {
+    margin: 0 0 0.6em;
+  }
+
+  ul {
+    margin: 0.4em 0 0;
+    padding-left: 1.2em;
+  }
+
+  .plain {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .muted {
+    color: var(--color-muted);
+    font-size: 0.9em;
+    white-space: nowrap;
+  }
+
+  a {
+    overflow-wrap: anywhere;
+  }
+
+  /* Na telefonie kontakt trafia zaraz pod nagłówek, żeby rekruter nie musiał przewijać. */
+  @media (max-width: 767.98px) {
+    .cv-grid {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .cv-main,
+    .cv-side {
+      display: contents;
+    }
+
+    .cv-side :global([data-testid='cv-contact']) {
+      order: -1;
+    }
+  }
+
+  @media (min-width: 768px) {
+    .cv-grid {
+      grid-template-columns: 1.6fr 1fr;
+    }
+  }
+
+  @media print {
+    .cv-actions {
+      display: none;
+    }
+
+    .cv {
+      padding: 0;
+      gap: 1rem;
+    }
+
+    .cv-grid {
+      grid-template-columns: 1.6fr 1fr;
+    }
+  }
+</style>

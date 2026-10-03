@@ -1,0 +1,66 @@
+---
+import { Image } from 'astro:assets';
+import photo from '../../assets/marek.png';
+
+interface Props {
+  name: string;
+  role: string;
+  summary: string;
+  location: string;
+  photoAlt: string;
+}
+
+const { name, role, summary, location, photoAlt } = Astro.props;
+---
+
+<header class="cv-header">
+  <Image src={photo} alt={photoAlt} width={96} height={96} class="photo" loading="eager" />
+  <div>
+    <h1>{name}</h1>
+    <p class="role">
+      {role} · {location}
+    </p>
+    <p class="summary">{summary}</p>
+  </div>
+</header>
+
+<style>
+  .cv-header {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space);
+    align-items: start;
+  }
+
+  .photo {
+    border-radius: 50%;
+    width: 4.5rem;
+    height: 4.5rem;
+    object-fit: cover;
+    filter: grayscale(0.3);
+  }
+
+  h1 {
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    margin: 0;
+    line-height: 1.1;
+  }
+
+  .role {
+    color: var(--color-accent);
+    font-weight: 600;
+    margin-block: 0.25em 0.75em;
+  }
+
+  .summary {
+    margin: 0;
+    max-width: 60ch;
+  }
+
+  @media (min-width: 768px) {
+    .photo {
+      width: 6rem;
+      height: 6rem;
+    }
+  }
+</style>

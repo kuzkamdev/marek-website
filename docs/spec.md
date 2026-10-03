@@ -81,3 +81,5 @@
 | 2026-10-03 | Praca w chmurze; hosting tymczasowy, docelowo własna domena. |
 | 2026-10-03 | Nowe repozytorium na GitHubie Marka: kuzkamdev/marek-website. |
 | 2026-10-03 | Specyfikacja zaakceptowana przez Marka. |
+| 2026-10-03 | Repo publiczne (darmowe GitHub Pages). Strona: https://kuzkamdev.github.io/marek-website/ |
+| 2026-10-03 | Szybkie CV pod `/cv/` i `/en/cv/`; bez telefonu, klienci anonimowo, subtelne zdjęcie; na telefonie kontakt zaraz pod nagłówkiem; wersja do druku mieści się na 1 stronie A4. |
