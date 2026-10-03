@@ -1,0 +1,31 @@
+---
+import { getLang, useTranslations } from '../i18n/utils';
+
+const t = useTranslations(getLang(Astro.currentLocale));
+---
+
+<section class="home">
+  <h1>Marek Molenda</h1>
+  <p class="role">{t('home.role')}</p>
+  <p>{t('home.status')}</p>
+</section>
+
+<style>
+  .home {
+    max-width: 40rem;
+    margin: 0 auto;
+    padding: var(--space);
+    text-align: center;
+  }
+
+  h1 {
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    margin-block: 0 0.25em;
+  }
+
+  .role {
+    font-size: 1.25rem;
+    color: var(--color-accent);
+    margin-block: 0 1.5em;
+  }
+</style>
