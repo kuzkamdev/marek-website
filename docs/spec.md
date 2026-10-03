@@ -83,3 +83,4 @@
 | 2026-10-03 | Specyfikacja zaakceptowana przez Marka. |
 | 2026-10-03 | Repo publiczne (darmowe GitHub Pages). Strona: https://kuzkamdev.github.io/marek-website/ |
 | 2026-10-03 | Szybkie CV pod `/cv/` i `/en/cv/`; bez telefonu, klienci anonimowo, subtelne zdjęcie; na telefonie kontakt zaraz pod nagłówkiem; wersja do druku mieści się na 1 stronie A4. |
+| 2026-10-03 | Etap 3, szkic mapy: wyspa SVG z 5 miejscami, przesuwanie/zoom bez bibliotek (pointer events), karty miejsc, kotwice `#place-…`; bez JS lista miejsc. |
