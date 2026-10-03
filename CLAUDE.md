@@ -27,16 +27,21 @@ Projekt jest też ćwiczeniem dobrych praktyk pracy z Claude Code.
 - `src/pages/`: strony; `src/pages/en/` to wersja angielska, która korzysta z tych samych komponentów.
 - `src/components/`: komponenty sekcji. Teksty nie są wpisywane na sztywno w komponentach.
 - `src/data/profile.ts`: treści profilu (CV, projekty, kontakt) dla `pl` i `en`; typ `Profile` wymusza ten sam kształt. Treści zmieniamy tylko tutaj.
+- `src/data/places.ts`: miejsca na mapie (pozycje w układzie świata 1600×1000, ikony) i treści kart budowane z `profile.ts`.
+- `src/components/map/`: `IslandMap.astro` (strona główna: mapa, karty, sterowanie) i `IslandArt.astro` (grafika SVG; zmiana wyglądu wyspy nie wymaga zmian w logice).
+- `src/scripts/panzoom.ts`: przesuwanie i zoom (mysz, dotyk, szczypanie, kółko) bez zewnętrznych bibliotek.
 - `src/i18n/ui.ts`: słownik tekstów UI dla obu języków; każdy klucz musi istnieć w `pl` i `en` (wymusza to typ).
-- `src/layouts/Base.astro`: wspólny szkielet HTML, przełącznik języka, globalne style i zmienne CSS.
+- `src/layouts/Base.astro`: wspólny szkielet HTML, przełącznik języka, globalne style i tokeny CSS (`--color-*`, `--gradient-brand`, `--font-*`). Kolory zmieniamy przez tokeny, nie wpisujemy ich na sztywno w komponentach (wyjątek: grafika SVG wyspy).
 
 ## Zasady
 
 - Linki wewnętrzne przez `getRelativeLocaleUrl()` z `astro:i18n` albo `import.meta.env.BASE_URL`, nigdy przez sztywne `/`, bo strona działa pod podścieżką.
 - Mobile first: wszystko ma działać od 360 px; testy pilnują braku poziomego przewijania na 360/768/1280.
 - Dostępność: semantyczny HTML, obsługa klawiatury, kontrast, animacje wyłączane przy `prefers-reduced-motion`.
+- Wygląd: ciemny motyw „nocna wyspa”, mocny odbiór przy zachowaniu przejrzystości (decyzja Marka). Wydruk CV ma osobne jasne style w `@media print`.
 - Krótkie porcje treści: żadnych ścian tekstu (wymóg ze specyfikacji).
 - Prywatność: bez numeru telefonu i nazw klientów na stronie (decyzja Marka; brak linku `tel:` sprawdza test).
+- Strona główna działa też bez JavaScriptu (klasa `js` na `<html>` ustawiana w `Base.astro`; bez niej mapa znika, a karty miejsc są zwykłą listą).
 - Każda nowa strona dostaje test dostępności axe (`@axe-core/playwright`) bez naruszeń.
 
 ## Sposób pracy

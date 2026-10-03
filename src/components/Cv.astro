@@ -29,19 +29,19 @@ const p = profiles[lang];
 
   <div class="cv-grid">
     <div class="cv-main">
-      <CvSection title={t('cv.experience')} id="experience">
+      <CvSection title={t('cv.experience')} id="experience" icon="💼">
         {p.experience.map((job) => (
           <div class="item">
             <h3>
               <a href={job.url}>{job.company}</a>
             </h3>
-            <ul class="plain">
+            <ol class="timeline">
               {job.roles.map((r) => (
                 <li>
                   <strong>{r.title}</strong> <span class="muted">{r.period}</span>
                 </li>
               ))}
-            </ul>
+            </ol>
             <ul>
               {job.highlights.map((h) => (
                 <li>{h}</li>
@@ -51,7 +51,7 @@ const p = profiles[lang];
         ))}
       </CvSection>
 
-      <CvSection title={t('cv.projects')} id="projects">
+      <CvSection title={t('cv.projects')} id="projects" icon="🛠️">
         {p.projects.map((project) => (
           <div class="item">
             <h3>{project.title}</h3>
@@ -63,7 +63,7 @@ const p = profiles[lang];
     </div>
 
     <aside class="cv-side">
-      <CvSection title={t('cv.contact')} id="contact">
+      <CvSection title={t('cv.contact')} id="contact" icon="✉️">
         <ul class="plain">
           {p.contact.map((c) => (
             <li>
@@ -73,11 +73,11 @@ const p = profiles[lang];
         </ul>
       </CvSection>
 
-      <CvSection title={t('cv.skills')} id="skills">
+      <CvSection title={t('cv.skills')} id="skills" icon="⚡">
         <Tags items={p.skills} />
       </CvSection>
 
-      <CvSection title={t('cv.certificates')} id="certificates">
+      <CvSection title={t('cv.certificates')} id="certificates" icon="🏅">
         <ul class="plain">
           {p.certificates.map((c) => (
             <li>
@@ -87,7 +87,7 @@ const p = profiles[lang];
         </ul>
       </CvSection>
 
-      <CvSection title={t('cv.education')} id="education">
+      <CvSection title={t('cv.education')} id="education" icon="🎓">
         <ul class="plain">
           {p.education.map((e) => (
             <li>
@@ -99,7 +99,7 @@ const p = profiles[lang];
         </ul>
       </CvSection>
 
-      <CvSection title={t('cv.languages')} id="languages">
+      <CvSection title={t('cv.languages')} id="languages" icon="🌍">
         <ul class="plain">
           {p.languages.map((l) => (
             <li>
@@ -109,7 +109,7 @@ const p = profiles[lang];
         </ul>
       </CvSection>
 
-      <CvSection title={t('cv.hobbies')} id="hobbies">
+      <CvSection title={t('cv.hobbies')} id="hobbies" icon="🎯">
         <ul class="plain hobbies">
           {p.hobbies.map((h) => (
             <li>
@@ -128,11 +128,11 @@ const p = profiles[lang];
 
 <style>
   .cv {
-    max-width: 64rem;
+    max-width: 68rem;
     margin: 0 auto;
     padding: 0 var(--space) calc(var(--space) * 2);
     display: grid;
-    gap: calc(var(--space) * 1.5);
+    gap: var(--space);
   }
 
   .cv-actions {
@@ -141,54 +141,104 @@ const p = profiles[lang];
     align-items: center;
     gap: 1rem;
     flex-wrap: wrap;
+    padding-right: 7rem;
+  }
+
+  .cv-actions a {
+    color: var(--color-text);
+    font-weight: 600;
+    text-decoration: none;
+  }
+
+  .cv-actions a:hover {
+    color: var(--color-accent);
   }
 
   .cv-actions button {
     font: inherit;
-    padding: 0.4em 0.9em;
-    border: 1px solid var(--color-accent);
-    border-radius: 0.4rem;
-    background: transparent;
-    color: var(--color-accent);
+    font-weight: 700;
+    padding: 0.55em 1.1em;
+    border: 0;
+    border-radius: 999px;
+    background: var(--gradient-brand);
+    color: var(--color-on-accent);
     cursor: pointer;
+    box-shadow: 0 8px 24px rgb(52 227 180 / 0.3);
   }
 
   .cv-grid,
   .cv-main,
   .cv-side {
     display: grid;
-    gap: calc(var(--space) * 1.5);
+    gap: var(--space);
     align-content: start;
   }
 
   .item + .item {
-    margin-top: 1.25rem;
+    margin-top: 1.4rem;
+    padding-top: 1.4rem;
+    border-top: 1px solid var(--color-border);
   }
 
   h3 {
-    font-size: 1.05rem;
-    margin: 0 0 0.35em;
+    font-size: 1.15rem;
+    margin: 0 0 0.45em;
+  }
+
+  h3 a {
+    color: var(--color-text);
   }
 
   p {
-    margin: 0 0 0.6em;
+    margin: 0 0 0.75em;
+    color: var(--color-muted);
   }
 
   ul {
-    margin: 0.4em 0 0;
+    margin: 0.5em 0 0;
     padding-left: 1.2em;
+  }
+
+  li::marker {
+    color: var(--color-accent);
   }
 
   .plain {
     list-style: none;
     padding: 0;
     display: grid;
-    gap: 0.35rem;
+    gap: 0.5rem;
+  }
+
+  /* Oś czasu stanowisk. */
+  .timeline {
+    list-style: none;
+    margin: 0.75rem 0;
+    padding: 0 0 0 1.25rem;
+    border-left: 2px solid rgb(52 227 180 / 0.35);
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .timeline li {
+    position: relative;
+  }
+
+  .timeline li::before {
+    content: '';
+    position: absolute;
+    left: calc(-1.25rem - 6px);
+    top: 0.45em;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    box-shadow: 0 0 10px var(--color-accent);
   }
 
   .muted {
     color: var(--color-muted);
-    font-size: 0.9em;
+    font-size: 0.88em;
     white-space: nowrap;
   }
 
@@ -231,6 +281,26 @@ const p = profiles[lang];
 
     .cv-grid {
       grid-template-columns: 1.6fr 1fr;
+      gap: 1rem;
+    }
+
+    .cv-main,
+    .cv-side {
+      gap: 0.9rem;
+    }
+
+    p {
+      color: var(--color-text);
+    }
+
+    .item + .item {
+      margin-top: 0.8rem;
+      padding-top: 0;
+      border: 0;
+    }
+
+    .timeline li::before {
+      box-shadow: none;
     }
   }
 </style>

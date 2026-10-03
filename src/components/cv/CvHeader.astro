@@ -14,11 +14,14 @@ const { name, role, summary, location, photoAlt } = Astro.props;
 ---
 
 <header class="cv-header">
-  <Image src={photo} alt={photoAlt} width={96} height={96} class="photo" loading="eager" />
-  <div>
+  <div class="photo-ring">
+    <Image src={photo} alt={photoAlt} width={128} height={128} class="photo" loading="eager" />
+  </div>
+  <div class="intro">
     <h1>{name}</h1>
-    <p class="role">
-      {role} · {location}
+    <p class="meta">
+      <span class="role">{role}</span>
+      <span class="location">📍 {location}</span>
     </p>
     <p class="summary">{summary}</p>
   </div>
@@ -26,41 +29,139 @@ const { name, role, summary, location, photoAlt } = Astro.props;
 
 <style>
   .cv-header {
+    position: relative;
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: var(--space);
-    align-items: start;
+    gap: clamp(1rem, 3vw, 2rem);
+    align-items: center;
+    padding: clamp(1.25rem, 4vw, 2.5rem);
+    border-radius: calc(var(--radius) * 1.4);
+    background:
+      radial-gradient(40rem 20rem at 0% 0%, rgb(52 227 180 / 0.22), transparent 60%),
+      radial-gradient(30rem 20rem at 100% 100%, rgb(155 140 255 / 0.25), transparent 60%),
+      var(--color-surface);
+    border: 1px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+  }
+
+  .photo-ring {
+    padding: 3px;
+    border-radius: 50%;
+    background: var(--gradient-brand);
+    box-shadow: 0 0 30px rgb(52 227 180 / 0.35);
   }
 
   .photo {
+    display: block;
     border-radius: 50%;
-    width: 4.5rem;
-    height: 4.5rem;
+    width: 4.75rem;
+    height: 4.75rem;
     object-fit: cover;
-    filter: grayscale(0.3);
+    border: 3px solid var(--color-surface);
   }
 
   h1 {
-    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-size: clamp(2rem, 7vw, 3.5rem);
     margin: 0;
-    line-height: 1.1;
+    line-height: 1;
+    background: var(--gradient-brand);
+    background-clip: text;
+    color: transparent;
+  }
+
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin: 0.75rem 0 0.9rem;
+    font-size: 0.9rem;
+  }
+
+  .role,
+  .location {
+    padding: 0.2em 0.75em;
+    border-radius: 999px;
   }
 
   .role {
-    color: var(--color-accent);
+    background: rgb(255 181 71 / 0.15);
+    color: var(--color-accent-2);
     font-weight: 600;
-    margin-block: 0.25em 0.75em;
+  }
+
+  .location {
+    background: rgb(255 255 255 / 0.06);
+    color: var(--color-muted);
   }
 
   .summary {
     margin: 0;
-    max-width: 60ch;
+    max-width: 62ch;
+    font-size: clamp(1rem, 1.6vw, 1.1rem);
+  }
+
+  /* Na telefonie zdjęcie i imię obok siebie, opis pod spodem na całą szerokość. */
+  @media (max-width: 559.98px) {
+    .cv-header {
+      grid-template-columns: auto 1fr;
+    }
+
+    .intro {
+      display: contents;
+    }
+
+    h1 {
+      grid-column: 2;
+    }
+
+    .meta,
+    .summary {
+      grid-column: 1 / -1;
+      margin-top: 0;
+    }
   }
 
   @media (min-width: 768px) {
     .photo {
-      width: 6rem;
-      height: 6rem;
+      width: 7.5rem;
+      height: 7.5rem;
+    }
+  }
+
+  @media print {
+    .cv-header {
+      padding: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+
+    .photo-ring {
+      background: none;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .photo {
+      width: 4.5rem;
+      height: 4.5rem;
+      border: 0;
+    }
+
+    h1 {
+      background: none;
+      color: var(--color-text);
+    }
+
+    .role,
+    .location {
+      padding: 0;
+      background: none;
+    }
+
+    .role {
+      color: var(--color-accent);
     }
   }
 </style>

@@ -2,28 +2,74 @@
 interface Props {
   title: string;
   id: string;
+  icon?: string;
 }
 
-const { title, id } = Astro.props;
+const { title, id, icon } = Astro.props;
 ---
 
 <section class="cv-section" aria-labelledby={id} data-testid={`cv-${id}`}>
-  <h2 id={id}>{title}</h2>
+  <h2 id={id}>
+    {icon && (
+      <span class="icon" aria-hidden="true">
+        {icon}
+      </span>
+    )}
+    {title}
+  </h2>
   <slot />
 </section>
 
 <style>
   .cv-section {
+    position: relative;
+    padding: 1.25rem 1.35rem 1.4rem;
+    border-radius: var(--radius);
+    background: linear-gradient(180deg, var(--color-surface-2), var(--color-surface));
+    border: 1px solid var(--color-border);
+    box-shadow: 0 10px 30px rgb(0 0 0 / 0.25);
     break-inside: avoid;
   }
 
   h2 {
-    font-size: 1.125rem;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 0.85rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.14em;
     color: var(--color-accent);
-    border-bottom: 1px solid currentColor;
-    padding-bottom: 0.25em;
-    margin-block: 0 0.75em;
+    margin-block: 0 1rem;
+  }
+
+  .icon {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 0.6rem;
+    font-size: 1rem;
+    letter-spacing: 0;
+    background: rgb(52 227 180 / 0.12);
+  }
+
+  @media print {
+    .cv-section {
+      padding: 0;
+      background: none;
+      border: 0;
+      box-shadow: none;
+    }
+
+    h2 {
+      margin-block: 0 0.4rem;
+      padding-bottom: 0.2rem;
+      border-bottom: 1px solid currentColor;
+    }
+
+    .icon {
+      display: none;
+    }
   }
 </style>
