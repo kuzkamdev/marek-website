@@ -1,0 +1,29 @@
+---
+interface Props {
+  title: string;
+  id: string;
+}
+
+const { title, id } = Astro.props;
+---
+
+<section class="cv-section" aria-labelledby={id} data-testid={`cv-${id}`}>
+  <h2 id={id}>{title}</h2>
+  <slot />
+</section>
+
+<style>
+  .cv-section {
+    break-inside: avoid;
+  }
+
+  h2 {
+    font-size: 1.125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--color-accent);
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 0.25em;
+    margin-block: 0 0.75em;
+  }
+</style>
