@@ -1,0 +1,533 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { WORLD_HEIGHT, WORLD_WIDTH, getPlaces } from '../../data/places';
+import { profiles } from '../../data/profile';
+import { getLang, useTranslations } from '../../i18n/utils';
+import Tags from '../cv/Tags.astro';
+import IslandArt from './IslandArt.astro';
+
+const lang = getLang(Astro.currentLocale);
+const t = useTranslations(lang);
+const places = getPlaces(lang);
+const profile = profiles[lang];
+const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
+---
+
+<div class="map" data-map>
+  <div class="map-intro">
+    <h1>{profile.name}</h1>
+    <p class="role">{profile.role}</p>
+    <p class="hint js-only">{t('map.hint')}</p>
+  </div>
+
+  <div
+    class="map-viewport"
+    data-viewport
+    role="region"
+    aria-label={t('map.label')}
+    aria-describedby="map-hint"
+    tabindex="0"
+  >
+    <span id="map-hint" class="visually-hidden">
+      {t('map.hint')}
+    </span>
+    <div
+      class="map-world"
+      data-world
+      data-testid="map-world"
+      style={`width:${WORLD_WIDTH}px;height:${WORLD_HEIGHT}px`}
+    >
+      <IslandArt />
+      {places.map((place) => (
+        <a
+          class="place"
+          href={`#place-${place.id}`}
+          style={`left:${place.x}px;top:${place.y}px`}
+          data-place={place.id}
+          data-x={place.x}
+          data-y={place.y}
+          aria-controls={`place-${place.id}`}
+        >
+          <span class="place-icon" aria-hidden="true">
+            {place.icon}
+          </span>
+          <span class="place-label">{place.title}</span>
+        </a>
+      ))}
+    </div>
+  </div>
+
+  <div class="map-controls js-only" role="group" aria-label={t('map.label')}>
+    <button type="button" data-zoom="in" aria-label={t('map.zoomIn')} title={t('map.zoomIn')}>
+      +
+    </button>
+    <button type="button" data-zoom="out" aria-label={t('map.zoomOut')} title={t('map.zoomOut')}>
+      −
+    </button>
+    <button type="button" data-zoom="reset">
+      {t('map.reset')}
+    </button>
+  </div>
+
+  <a class="quick-cv" href={cvUrl} data-testid="quick-cv">
+    {t('home.quickCv')} →
+  </a>
+
+  <section class="place-panel" data-panel aria-label={t('map.places')}>
+    {places.map((place) => (
+      <article
+        class="place-card"
+        id={`place-${place.id}`}
+        data-card={place.id}
+        tabindex="-1"
+        aria-labelledby={`place-${place.id}-title`}
+      >
+        <div class="card-head">
+          <h2 id={`place-${place.id}-title`}>
+            <span aria-hidden="true">{place.icon}</span> {place.title}
+          </h2>
+          <button type="button" class="card-close js-only" data-close aria-label={t('map.close')}>
+            ×
+          </button>
+        </div>
+        {place.lines.map((line) => (
+          <p>{line}</p>
+        ))}
+        {place.tags && <Tags items={place.tags} />}
+        {place.links && (
+          <ul class="card-links">
+            {place.links.map((link) => (
+              <li>
+                <a href={link.href}>{link.text}</a>
+              </li>
+            ))}
+          </ul>
+        )}
+        <a class="card-cv" href={cvUrl}>
+          {t('map.fullCv')} →
+        </a>
+      </article>
+    ))}
+  </section>
+</div>
+
+<script>
+  import { PanZoom } from '../../scripts/panzoom';
+
+  const root = document.querySelector<HTMLElement>('[data-map]');
+  const viewport = root?.querySelector<HTMLElement>('[data-viewport]');
+  const world = root?.querySelector<HTMLElement>('[data-world]');
+  const panel = root?.querySelector<HTMLElement>('[data-panel]');
+
+  if (root && viewport && world && panel) {
+    const pz = new PanZoom(viewport, world);
+    const markers = [...world.querySelectorAll<HTMLAnchorElement>('[data-place]')];
+    const isNarrow = () => window.matchMedia('(max-width: 767.98px)').matches;
+    let lastMarker: HTMLAnchorElement | null = null;
+
+    // Znaczniki zachowują czytelny rozmiar niezależnie od przybliżenia.
+    pz.onChange(() => world.style.setProperty('--inv-scale', String(1 / pz.scale)));
+
+    // Start: na komputerze widać całą wyspę; na wąskim ekranie mapa jest większa
+    // (czytelne miejsca), a resztę odkrywa się przesuwaniem.
+    const START_MIN_SCALE = 0.5;
+    const startScale = () => {
+      const { width, height } = viewport.getBoundingClientRect();
+      const cover = Math.max(width / pz.worldWidth, height / pz.worldHeight);
+      return Math.max(pz.fitScale() * 1.1, Math.min(START_MIN_SCALE, cover));
+    };
+    const resetView = (animate: boolean) =>
+      pz.centerOn(pz.worldWidth / 2, pz.worldHeight / 2, startScale(), animate);
+    resetView(false);
+
+    const markerFor = (id: string) => markers.find((m) => m.dataset.place === id) ?? null;
+
+    // Przelot do miejsca tak, żeby karta go nie zasłaniała.
+    const flyTo = (marker: HTMLAnchorElement) => {
+      const scale = Math.max(pz.scale, 0.9);
+      const panelRect = panel.getBoundingClientRect();
+      let wx = Number(marker.dataset.x);
+      let wy = Number(marker.dataset.y);
+      if (isNarrow()) wy += panelRect.height / 2 / scale;
+      else wx += panelRect.width / 2 / scale;
+      pz.centerOn(wx, wy, scale, true);
+    };
+
+    const open = (id: string, { focus = true } = {}) => {
+      const marker = markerFor(id);
+      const card = panel.querySelector<HTMLElement>(`[data-card="${id}"]`);
+      if (!marker || !card) return;
+      panel.querySelectorAll('.place-card.is-open').forEach((c) => c.classList.remove('is-open'));
+      markers.forEach((m) => m.removeAttribute('aria-current'));
+      card.classList.add('is-open');
+      panel.classList.add('has-open');
+      marker.setAttribute('aria-current', 'true');
+      lastMarker = marker;
+      history.replaceState(null, '', `#place-${id}`);
+      flyTo(marker);
+      if (focus) card.focus({ preventScroll: true });
+    };
+
+    const close = () => {
+      if (!panel.classList.contains('has-open')) return;
+      panel.classList.remove('has-open');
+      panel.querySelectorAll('.place-card.is-open').forEach((c) => c.classList.remove('is-open'));
+      markers.forEach((m) => m.removeAttribute('aria-current'));
+      history.replaceState(null, '', location.pathname + location.search);
+      lastMarker?.focus({ preventScroll: true });
+    };
+
+    markers.forEach((marker) => {
+      marker.addEventListener('click', (e) => {
+        e.preventDefault();
+        open(marker.dataset.place!);
+      });
+      // Miejsce osiągnięte klawiszem Tab pojawia się w oknie mapy.
+      marker.addEventListener('focus', () => {
+        const r = marker.getBoundingClientRect();
+        const v = viewport.getBoundingClientRect();
+        if (r.left < v.left || r.right > v.right || r.top < v.top || r.bottom > v.bottom) {
+          pz.centerOn(Number(marker.dataset.x), Number(marker.dataset.y), pz.scale, true);
+        }
+      });
+    });
+
+    panel.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', close));
+    root.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') close();
+    });
+
+    root.querySelectorAll<HTMLButtonElement>('[data-zoom]').forEach((button) => {
+      button.addEventListener('click', () => {
+        const action = button.dataset.zoom;
+        if (action === 'in') pz.zoomBy(1.4, undefined, true);
+        else if (action === 'out') pz.zoomBy(1 / 1.4, undefined, true);
+        else {
+          close();
+          resetView(true);
+        }
+      });
+    });
+
+    // Klawiatura w oknie mapy: strzałki przesuwają, + i − przybliżają.
+    viewport.addEventListener('keydown', (e) => {
+      if (e.target !== viewport) return;
+      const step = 80;
+      const moves: Record<string, [number, number]> = {
+        ArrowLeft: [step, 0],
+        ArrowRight: [-step, 0],
+        ArrowUp: [0, step],
+        ArrowDown: [0, -step],
+      };
+      if (moves[e.key]) {
+        e.preventDefault();
+        pz.panBy(...moves[e.key], true);
+      } else if (e.key === '+' || e.key === '=') {
+        pz.zoomBy(1.25, undefined, true);
+      } else if (e.key === '-') {
+        pz.zoomBy(0.8, undefined, true);
+      }
+    });
+
+    const initial = location.hash.match(/^#place-(\w+)$/)?.[1];
+    if (initial) open(initial, { focus: false });
+    root.classList.add('is-ready');
+  }
+</script>
+
+<style>
+  .map {
+    --color-sea: #93cbcc;
+    position: relative;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--color-sea);
+  }
+
+  :global(.site-header) {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 20;
+    padding: 0.75rem;
+  }
+
+  /* Przełącznik języka leży na mapie, więc potrzebuje własnego tła dla kontrastu. */
+  :global(.site-header a) {
+    display: inline-block;
+    padding: 0.35em 0.8em;
+    border-radius: 999px;
+    background: var(--color-bg);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  }
+
+  .map-intro {
+    position: absolute;
+    top: 0.75rem;
+    left: 0.75rem;
+    z-index: 10;
+    max-width: min(22rem, calc(100% - 7rem));
+    padding: 0.6rem 0.9rem;
+    border-radius: 0.75rem;
+    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    pointer-events: none;
+  }
+
+  .map-intro h1 {
+    font-size: clamp(1.25rem, 4vw, 1.75rem);
+    margin: 0;
+    line-height: 1.15;
+  }
+
+  .map-intro p {
+    margin: 0.15rem 0 0;
+    font-size: 0.9rem;
+  }
+
+  .role {
+    color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  .hint {
+    color: var(--color-muted);
+  }
+
+  .map-viewport {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    touch-action: none;
+    cursor: grab;
+    user-select: none;
+  }
+
+  .map-viewport:focus-visible {
+    outline: 3px solid var(--color-accent);
+    outline-offset: -3px;
+  }
+
+  .map-viewport:global(.is-dragging) {
+    cursor: grabbing;
+  }
+
+  .map-world {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: 0 0;
+    will-change: transform;
+  }
+
+  .map-world:global(.is-animating) {
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .place {
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.2rem;
+    transform: translate(-50%, -50%) scale(clamp(0.9, var(--inv-scale, 1), 2.2));
+    text-decoration: none;
+    color: var(--color-text);
+  }
+
+  .place-icon {
+    display: grid;
+    place-items: center;
+    width: 3.5rem;
+    height: 3.5rem;
+    font-size: 1.9rem;
+    border-radius: 50%;
+    background: var(--color-bg);
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+  }
+
+  .place-label {
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.1em 0.6em;
+    border-radius: 999px;
+    background: var(--color-bg);
+    white-space: nowrap;
+  }
+
+  .place:hover .place-icon,
+  .place:focus-visible .place-icon,
+  .place[aria-current] .place-icon {
+    background: var(--color-accent);
+  }
+
+  .place:focus-visible {
+    outline: none;
+  }
+
+  .place:focus-visible .place-label {
+    outline: 3px solid var(--color-accent);
+  }
+
+  .map-controls {
+    position: absolute;
+    right: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 10;
+    display: flex;
+    gap: 0.4rem;
+  }
+
+  .map-controls button,
+  .card-close {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+    font: inherit;
+    font-weight: 600;
+    border: 0;
+    border-radius: 0.6rem;
+    background: var(--color-bg);
+    color: var(--color-text);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
+    cursor: pointer;
+  }
+
+  .map-controls button[data-zoom='reset'] {
+    padding: 0 0.8rem;
+  }
+
+  /* Na telefonie przyciski mapy w kolumnie nad przyciskiem CV, żeby się nie nakładały. */
+  @media (max-width: 767.98px) {
+    .map-controls {
+      flex-direction: column;
+      align-items: flex-end;
+      bottom: 4.25rem;
+    }
+  }
+
+  .quick-cv {
+    position: absolute;
+    left: 0.75rem;
+    bottom: 0.75rem;
+    z-index: 10;
+    padding: 0.7em 1.2em;
+    border-radius: 999px;
+    background: var(--color-accent);
+    color: var(--color-bg);
+    font-weight: 600;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+  }
+
+  .place-panel {
+    position: absolute;
+    z-index: 15;
+    background: var(--color-bg);
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 0.2);
+    overflow-y: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    max-height: 55dvh;
+    border-radius: 1rem 1rem 0 0;
+    padding: 1rem 1.25rem 1.5rem;
+  }
+
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .place-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+  }
+
+  .place-card:focus {
+    outline: none;
+  }
+
+  .place-card p {
+    margin: 0 0 0.6rem;
+  }
+
+  .card-links {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 0.6rem;
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .card-links a {
+    overflow-wrap: anywhere;
+  }
+
+  .card-cv {
+    display: inline-block;
+    margin-top: 0.6rem;
+    font-weight: 600;
+  }
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  @media (min-width: 768px) {
+    .place-panel {
+      left: auto;
+      top: 4rem;
+      right: 0.75rem;
+      bottom: 4.5rem;
+      width: 24rem;
+      max-height: none;
+      border-radius: 1rem;
+      height: fit-content;
+      max-height: calc(100dvh - 9rem);
+    }
+  }
+
+  /* Z JavaScriptem: panel pokazuje jedną otwartą kartę. */
+  :global(.js) .place-panel:not(.has-open),
+  :global(.js) .place-card:not(.is-open) {
+    display: none;
+  }
+
+  /* Bez JavaScriptu: zamiast mapy zwykła lista miejsc i link do CV. */
+  :global(html:not(.js)) .js-only {
+    display: none;
+  }
+
+  :global(html:not(.js)) .map {
+    height: auto;
+    overflow: visible;
+    background: none;
+    padding: 6rem 0 5rem;
+  }
+
+  :global(html:not(.js)) .map-viewport {
+    display: none;
+  }
+
+  :global(html:not(.js)) .place-panel {
+    position: static;
+    box-shadow: none;
+    max-width: 40rem;
+    max-height: none;
+    width: auto;
+    margin: 0 auto;
+    display: grid;
+    gap: 2rem;
+  }
+
+  :global(html:not(.js)) .quick-cv {
+    position: fixed;
+  }
+</style>

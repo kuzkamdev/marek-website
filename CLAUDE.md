@@ -27,6 +27,9 @@ Projekt jest też ćwiczeniem dobrych praktyk pracy z Claude Code.
 - `src/pages/`: strony; `src/pages/en/` to wersja angielska, która korzysta z tych samych komponentów.
 - `src/components/`: komponenty sekcji. Teksty nie są wpisywane na sztywno w komponentach.
 - `src/data/profile.ts`: treści profilu (CV, projekty, kontakt) dla `pl` i `en`; typ `Profile` wymusza ten sam kształt. Treści zmieniamy tylko tutaj.
+- `src/data/places.ts`: miejsca na mapie (pozycje w układzie świata 1600×1000, ikony) i treści kart budowane z `profile.ts`.
+- `src/components/map/`: `IslandMap.astro` (strona główna: mapa, karty, sterowanie) i `IslandArt.astro` (grafika SVG; zmiana wyglądu wyspy nie wymaga zmian w logice).
+- `src/scripts/panzoom.ts`: przesuwanie i zoom (mysz, dotyk, szczypanie, kółko) bez zewnętrznych bibliotek.
 - `src/i18n/ui.ts`: słownik tekstów UI dla obu języków; każdy klucz musi istnieć w `pl` i `en` (wymusza to typ).
 - `src/layouts/Base.astro`: wspólny szkielet HTML, przełącznik języka, globalne style i zmienne CSS.
 
@@ -37,6 +40,7 @@ Projekt jest też ćwiczeniem dobrych praktyk pracy z Claude Code.
 - Dostępność: semantyczny HTML, obsługa klawiatury, kontrast, animacje wyłączane przy `prefers-reduced-motion`.
 - Krótkie porcje treści: żadnych ścian tekstu (wymóg ze specyfikacji).
 - Prywatność: bez numeru telefonu i nazw klientów na stronie (decyzja Marka; brak linku `tel:` sprawdza test).
+- Strona główna działa też bez JavaScriptu (klasa `js` na `<html>` ustawiana w `Base.astro`; bez niej mapa znika, a karty miejsc są zwykłą listą).
 - Każda nowa strona dostaje test dostępności axe (`@axe-core/playwright`) bez naruszeń.
 
 ## Sposób pracy

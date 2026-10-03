@@ -1,0 +1,88 @@
+---
+import { WORLD_HEIGHT, WORLD_WIDTH, placePositions } from '../../data/places';
+
+// Szkic grafiki wyspy (etap 3). Finalna kolorystyka i detale w etapie 5.
+// Ścieżka łączy miejsca w kolejności zwiedzania.
+const order = ['hobbies', 'experience', 'about', 'projects', 'contact'] as const;
+const route = order
+  .map((id) => placePositions.find((p) => p.id === id)!)
+  .map((p, i) => `${i === 0 ? 'M' : 'L'}${p.x},${p.y + 40}`)
+  .join(' ');
+
+const trees = [
+  [330, 360],
+  [360, 420],
+  [300, 470],
+  [760, 300],
+  [800, 250],
+  [840, 310],
+  [1250, 420],
+  [1290, 470],
+  [1210, 470],
+  [880, 720],
+  [930, 760],
+  [700, 640],
+  [380, 600],
+];
+const waves = Array.from({ length: 14 }, (_, i) => ({
+  x: (i * 377) % WORLD_WIDTH,
+  y: 60 + ((i * 211) % (WORLD_HEIGHT - 120)),
+}));
+---
+
+<svg
+  class="island-art"
+  viewBox={`0 0 ${WORLD_WIDTH} ${WORLD_HEIGHT}`}
+  width={WORLD_WIDTH}
+  height={WORLD_HEIGHT}
+  aria-hidden="true"
+  focusable="false"
+>
+  <rect width={WORLD_WIDTH} height={WORLD_HEIGHT} fill="var(--color-sea)"></rect>
+  {waves.map((w) => (
+    <path
+      d={`M${w.x},${w.y} q15,-10 30,0 t30,0`}
+      fill="none"
+      stroke="#ffffff"
+      stroke-opacity="0.6"
+      stroke-width="3"
+      stroke-linecap="round"
+    />
+  ))}
+  <path
+    d="M300,260 C420,150 640,170 780,190 C950,160 1150,180 1290,300 C1400,400 1390,560 1330,680 C1260,820 1050,860 860,850 C700,880 520,880 400,800 C270,720 220,600 230,470 C235,380 250,310 300,260 Z"
+    fill="#ecd9a8"
+  ></path>
+  <path
+    d="M330,290 C440,200 640,215 780,230 C950,205 1130,220 1250,320 C1350,410 1345,560 1290,660 C1225,780 1040,815 860,810 C705,835 540,835 425,765 C305,690 265,590 272,475 C276,395 290,330 330,290 Z"
+    fill="#a9cf8e"
+  ></path>
+  <ellipse cx="900" cy="420" rx="160" ry="70" fill="#93bf7a"></ellipse>
+  <ellipse cx="560" cy="360" rx="110" ry="50" fill="#93bf7a"></ellipse>
+  <path
+    d={route}
+    fill="none"
+    stroke="#8a6d3b"
+    stroke-width="6"
+    stroke-dasharray="4 14"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  ></path>
+  {trees.map(([x, y]) => (
+    <g>
+      <rect x={x - 3} y={y} width="6" height="16" fill="#7a5a35" />
+      <circle cx={x} cy={y - 6} r="16" fill="#5f9e5a" />
+    </g>
+  ))}
+  <path d="M520,840 L520,900 M500,900 L540,900" stroke="#7a5a35" stroke-width="6"></path>
+  <g transform="translate(1400 820)">
+    <path d="M0,0 L60,0 L50,14 L10,14 Z" fill="#8a6d3b"></path>
+    <path d="M30,0 L30,-44 L52,-8 Z" fill="#ffffff"></path>
+  </g>
+</svg>
+
+<style>
+  .island-art {
+    display: block;
+  }
+</style>
