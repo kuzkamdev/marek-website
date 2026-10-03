@@ -29,7 +29,7 @@
 - Unikać: ścian tekstu, rozbudowanych prezentacji, których nie da się ogarnąć wzrokiem. Treść w krótkich porcjach.
 - **Szybka ścieżka dla rekrutera**: zawsze dostępny skrót do prostej wersji CV (bez eksplorowania mapy).
 - Inspiracje: brak konkretnych przykładów (można dodać później).
-- Kolory i klimat (ciemny/jasny): _jeszcze nieustalone_.
+- Kolory i klimat: **ciemny motyw „nocna wyspa”** (granat, miętowy i bursztynowy akcent, gradienty, szklane karty, fonty Space Grotesk + Inter). Ustalone 2026-10-03 po feedbacku Marka: minimalistyczny wygląd był „zbyt stary”; ma być przejrzyście, ale z mocnym odbiorem.
 
 ## 6. Technologia i hosting
 - Stack (domyślny, przyjęty): **Astro + TypeScript**, interaktywne fragmenty jako „wyspy” tylko tam, gdzie potrzeba; i18n PL/EN wbudowane w Astro.
@@ -64,7 +64,6 @@
 6. Szlif: dostępność, wydajność, testy wizualne, prawdziwe treści.
 
 ## 11. Otwarte pytania
-- Kolory i klimat (ciemny/jasny): decyzja po pierwszym szkicu mapy.
 - Nazwa repozytorium.
 
 ## Dziennik decyzji
@@ -84,3 +83,4 @@
 | 2026-10-03 | Repo publiczne (darmowe GitHub Pages). Strona: https://kuzkamdev.github.io/marek-website/ |
 | 2026-10-03 | Szybkie CV pod `/cv/` i `/en/cv/`; bez telefonu, klienci anonimowo, subtelne zdjęcie; na telefonie kontakt zaraz pod nagłówkiem; wersja do druku mieści się na 1 stronie A4. |
 | 2026-10-03 | Etap 3, szkic mapy: wyspa SVG z 5 miejscami, przesuwanie/zoom bez bibliotek (pointer events), karty miejsc, kotwice `#place-…`; bez JS lista miejsc. |
+| 2026-10-03 | Feedback Marka: wygląd zbyt minimalistyczny. Nowy kierunek „nocna wyspa” (ciemny motyw, akcenty, animacje mapy) wprowadzony już w etapie 3 zamiast w etapie 5. Wydruk CV pozostaje jasny. |

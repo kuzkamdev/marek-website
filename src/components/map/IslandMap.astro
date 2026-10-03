@@ -14,7 +14,8 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
 ---
 
 <div class="map" data-map>
-  <div class="map-intro">
+  <div class="map-intro glass">
+    <p class="eyebrow">Portfolio</p>
     <h1>{profile.name}</h1>
     <p class="role">{profile.role}</p>
     <p class="hint js-only">{t('map.hint')}</p>
@@ -58,13 +59,25 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
   </div>
 
   <div class="map-controls js-only" role="group" aria-label={t('map.label')}>
-    <button type="button" data-zoom="in" aria-label={t('map.zoomIn')} title={t('map.zoomIn')}>
+    <button
+      type="button"
+      class="glass"
+      data-zoom="in"
+      aria-label={t('map.zoomIn')}
+      title={t('map.zoomIn')}
+    >
       +
     </button>
-    <button type="button" data-zoom="out" aria-label={t('map.zoomOut')} title={t('map.zoomOut')}>
+    <button
+      type="button"
+      class="glass"
+      data-zoom="out"
+      aria-label={t('map.zoomOut')}
+      title={t('map.zoomOut')}
+    >
       −
     </button>
-    <button type="button" data-zoom="reset">
+    <button type="button" class="glass" data-zoom="reset">
       {t('map.reset')}
     </button>
   </div>
@@ -73,7 +86,7 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     {t('home.quickCv')} →
   </a>
 
-  <section class="place-panel" data-panel aria-label={t('map.places')}>
+  <section class="place-panel glass" data-panel aria-label={t('map.places')}>
     {places.map((place) => (
       <article
         class="place-card"
@@ -84,9 +97,17 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
       >
         <div class="card-head">
           <h2 id={`place-${place.id}-title`}>
-            <span aria-hidden="true">{place.icon}</span> {place.title}
+            <span class="card-icon" aria-hidden="true">
+              {place.icon}
+            </span>
+            {place.title}
           </h2>
-          <button type="button" class="card-close js-only" data-close aria-label={t('map.close')}>
+          <button
+            type="button"
+            class="card-close glass js-only"
+            data-close
+            aria-label={t('map.close')}
+          >
             ×
           </button>
         </div>
@@ -136,20 +157,30 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
       const cover = Math.max(width / pz.worldWidth, height / pz.worldHeight);
       return Math.max(pz.fitScale() * 1.1, Math.min(START_MIN_SCALE, cover));
     };
+    // Środek widoku lekko powyżej środka świata, żeby wizytówka w rogu nie zasłaniała miejsc.
     const resetView = (animate: boolean) =>
-      pz.centerOn(pz.worldWidth / 2, pz.worldHeight / 2, startScale(), animate);
+      pz.centerOn(pz.worldWidth / 2, pz.worldHeight / 2 - 70, startScale(), animate);
     resetView(false);
 
     const markerFor = (id: string) => markers.find((m) => m.dataset.place === id) ?? null;
 
-    // Przelot do miejsca tak, żeby karta go nie zasłaniała.
+    // Przelot do miejsca: znacznik ląduje na środku wolnego obszaru,
+    // czyli między wizytówką u góry a kartą (telefon) albo na lewo od karty (komputer).
+    const intro = root.querySelector<HTMLElement>('.map-intro');
     const flyTo = (marker: HTMLAnchorElement) => {
       const scale = Math.max(pz.scale, 0.9);
+      const view = viewport.getBoundingClientRect();
       const panelRect = panel.getBoundingClientRect();
-      let wx = Number(marker.dataset.x);
-      let wy = Number(marker.dataset.y);
-      if (isNarrow()) wy += panelRect.height / 2 / scale;
-      else wx += panelRect.width / 2 / scale;
+      let targetX = view.width / 2;
+      let targetY = view.height / 2;
+      if (isNarrow()) {
+        const top = intro ? intro.getBoundingClientRect().bottom - view.top : 0;
+        targetY = (top + (panelRect.top - view.top)) / 2;
+      } else {
+        targetX = (panelRect.left - view.left) / 2;
+      }
+      const wx = Number(marker.dataset.x) + (view.width / 2 - targetX) / scale;
+      const wy = Number(marker.dataset.y) + (view.height / 2 - targetY) / scale;
       pz.centerOn(wx, wy, scale, true);
     };
 
@@ -237,11 +268,10 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
 
 <style>
   .map {
-    --color-sea: #93cbcc;
     position: relative;
     height: 100dvh;
     overflow: hidden;
-    background: var(--color-sea);
+    background: #071a30;
   }
 
   :global(.site-header) {
@@ -252,13 +282,21 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     padding: 0.75rem;
   }
 
-  /* Przełącznik języka leży na mapie, więc potrzebuje własnego tła dla kontrastu. */
-  :global(.site-header a) {
-    display: inline-block;
-    padding: 0.35em 0.8em;
-    border-radius: 999px;
-    background: var(--color-bg);
-    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  /* Winieta: przyciemnione brzegi kierują wzrok na wyspę. */
+  .map::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    pointer-events: none;
+    background: radial-gradient(ellipse at center, transparent 55%, rgb(3 8 18 / 0.6) 100%);
+  }
+
+  .glass {
+    background: rgb(17 27 47 / 0.78);
+    border: 1px solid var(--color-border);
+    backdrop-filter: blur(14px) saturate(140%);
+    box-shadow: var(--shadow-lg);
   }
 
   .map-intro {
@@ -266,30 +304,49 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     top: 0.75rem;
     left: 0.75rem;
     z-index: 10;
-    max-width: min(22rem, calc(100% - 7rem));
-    padding: 0.6rem 0.9rem;
-    border-radius: 0.75rem;
-    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    max-width: min(24rem, calc(100% - 8rem));
+    padding: 0.9rem 1.1rem;
+    border-radius: var(--radius);
     pointer-events: none;
   }
 
-  .map-intro h1 {
-    font-size: clamp(1.25rem, 4vw, 1.75rem);
-    margin: 0;
-    line-height: 1.15;
+  .eyebrow {
+    margin: 0 0 0.2rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--color-accent);
   }
 
-  .map-intro p {
-    margin: 0.15rem 0 0;
-    font-size: 0.9rem;
+  .map-intro h1 {
+    font-size: clamp(1.6rem, 5vw, 2.6rem);
+    margin: 0;
+    line-height: 1.02;
+    background: var(--gradient-brand);
+    background-clip: text;
+    color: transparent;
   }
 
   .role {
-    color: var(--color-accent);
+    display: inline-block;
+    margin: 0.45rem 0 0;
+    padding: 0.15em 0.7em;
+    border-radius: 999px;
+    background: rgb(255 181 71 / 0.14);
+    color: var(--color-accent-2);
     font-weight: 600;
+    font-size: 0.85rem;
+  }
+
+  /* Przy otwartej karcie wizytówka się zmniejsza, żeby zostawić miejsce na mapę. */
+  .map:has(.has-open) .hint {
+    display: none;
   }
 
   .hint {
+    margin: 0.5rem 0 0;
+    font-size: 0.85rem;
     color: var(--color-muted);
   }
 
@@ -303,7 +360,7 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
   }
 
   .map-viewport:focus-visible {
-    outline: 3px solid var(--color-accent);
+    outline: 3px solid var(--color-accent-2);
     outline-offset: -3px;
   }
 
@@ -320,7 +377,7 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
   }
 
   .map-world:global(.is-animating) {
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   .place {
@@ -328,37 +385,74 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.2rem;
+    gap: 0.35rem;
     transform: translate(-50%, -50%) scale(clamp(0.9, var(--inv-scale, 1), 2.2));
     text-decoration: none;
     color: var(--color-text);
   }
 
   .place-icon {
+    position: relative;
     display: grid;
     place-items: center;
-    width: 3.5rem;
-    height: 3.5rem;
+    width: 3.75rem;
+    height: 3.75rem;
     font-size: 1.9rem;
     border-radius: 50%;
-    background: var(--color-bg);
-    border: 3px solid var(--color-accent);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.2);
+    background:
+      linear-gradient(var(--color-surface), var(--color-surface)) padding-box,
+      var(--gradient-brand) border-box;
+    border: 3px solid transparent;
+    box-shadow:
+      0 0 0 6px rgb(52 227 180 / 0.12),
+      0 10px 24px rgb(0 0 0 / 0.5);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  /* Pulsujący pierścień zachęca do kliknięcia. */
+  .place-icon::after {
+    content: '';
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    border: 2px solid var(--color-accent);
+    opacity: 0;
+    animation: pulse 2.8s ease-out infinite;
   }
 
   .place-label {
+    font-family: var(--font-display);
     font-weight: 700;
     font-size: 0.95rem;
-    padding: 0.1em 0.6em;
+    padding: 0.2em 0.75em;
     border-radius: 999px;
-    background: var(--color-bg);
+    background: rgb(10 17 32 / 0.85);
+    border: 1px solid var(--color-border);
     white-space: nowrap;
   }
 
   .place:hover .place-icon,
-  .place:focus-visible .place-icon,
+  .place:focus-visible .place-icon {
+    transform: translateY(-4px) scale(1.06);
+    box-shadow:
+      0 0 0 8px rgb(52 227 180 / 0.22),
+      0 0 32px rgb(52 227 180 / 0.55);
+  }
+
   .place[aria-current] .place-icon {
-    background: var(--color-accent);
+    background:
+      linear-gradient(#3a2a10, #3a2a10) padding-box,
+      linear-gradient(120deg, #ffb547, #ff7a59) border-box;
+    box-shadow:
+      0 0 0 8px rgb(255 181 71 / 0.25),
+      0 0 36px rgb(255 181 71 / 0.6);
+  }
+
+  .place[aria-current] .place-label {
+    border-color: var(--color-accent-2);
+    color: var(--color-accent-2);
   }
 
   .place:focus-visible {
@@ -366,7 +460,7 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
   }
 
   .place:focus-visible .place-label {
-    outline: 3px solid var(--color-accent);
+    outline: 3px solid var(--color-accent-2);
   }
 
   .map-controls {
@@ -383,25 +477,27 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     min-width: 2.75rem;
     min-height: 2.75rem;
     font: inherit;
-    font-weight: 600;
-    border: 0;
-    border-radius: 0.6rem;
-    background: var(--color-bg);
+    font-weight: 700;
+    border-radius: 0.8rem;
     color: var(--color-text);
-    box-shadow: 0 2px 8px rgb(0 0 0 / 0.2);
     cursor: pointer;
   }
 
-  .map-controls button[data-zoom='reset'] {
-    padding: 0 0.8rem;
+  .map-controls button:hover,
+  .card-close:hover {
+    border-color: var(--color-accent);
+    color: var(--color-accent);
   }
 
-  /* Na telefonie przyciski mapy w kolumnie nad przyciskiem CV, żeby się nie nakładały. */
+  .map-controls button[data-zoom='reset'] {
+    padding: 0 0.9rem;
+  }
+
   @media (max-width: 767.98px) {
     .map-controls {
       flex-direction: column;
       align-items: flex-end;
-      bottom: 4.25rem;
+      bottom: 4.5rem;
     }
   }
 
@@ -410,39 +506,74 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     left: 0.75rem;
     bottom: 0.75rem;
     z-index: 10;
-    padding: 0.7em 1.2em;
+    padding: 0.8em 1.35em;
     border-radius: 999px;
-    background: var(--color-accent);
-    color: var(--color-bg);
-    font-weight: 600;
+    background: var(--gradient-brand);
+    color: var(--color-on-accent);
+    font-family: var(--font-display);
+    font-weight: 700;
     text-decoration: none;
-    box-shadow: 0 2px 8px rgb(0 0 0 / 0.25);
+    box-shadow:
+      0 10px 30px rgb(52 227 180 / 0.35),
+      0 2px 6px rgb(0 0 0 / 0.4);
+    transition: transform 0.2s ease;
+  }
+
+  .quick-cv:hover {
+    transform: translateY(-2px);
   }
 
   .place-panel {
     position: absolute;
     z-index: 15;
-    background: var(--color-bg);
-    box-shadow: 0 -4px 20px rgb(0 0 0 / 0.2);
     overflow-y: auto;
     left: 0;
     right: 0;
     bottom: 0;
-    max-height: 55dvh;
-    border-radius: 1rem 1rem 0 0;
-    padding: 1rem 1.25rem 1.5rem;
+    max-height: 58dvh;
+    border-radius: 1.4rem 1.4rem 0 0;
+    padding: 1.25rem 1.25rem 1.75rem;
+  }
+
+  /* Pasek gradientu u góry karty. */
+  .place-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--gradient-brand);
+  }
+
+  :global(.js) .place-card {
+    animation: card-in 0.35s ease-out;
   }
 
   .card-head {
     display: flex;
     justify-content: space-between;
-    align-items: start;
+    align-items: center;
     gap: 1rem;
+    margin-bottom: 0.9rem;
   }
 
   .place-card h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1.3rem;
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0;
+    font-size: clamp(1.4rem, 4vw, 1.75rem);
+    line-height: 1.1;
+  }
+
+  .card-icon {
+    display: grid;
+    place-items: center;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.8rem;
+    font-size: 1.4rem;
+    background: rgb(52 227 180 / 0.14);
   }
 
   .place-card:focus {
@@ -450,7 +581,12 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
   }
 
   .place-card p {
-    margin: 0 0 0.6rem;
+    margin: 0 0 0.7rem;
+    color: var(--color-muted);
+  }
+
+  .place-card p:first-of-type {
+    color: var(--color-text);
   }
 
   .card-links {
@@ -458,17 +594,28 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     padding: 0;
     margin: 0 0 0.6rem;
     display: grid;
-    gap: 0.4rem;
+    gap: 0.5rem;
   }
 
   .card-links a {
+    display: block;
+    padding: 0.6rem 0.8rem;
+    border-radius: 0.7rem;
+    background: var(--color-surface-2);
+    border: 1px solid var(--color-border);
+    text-decoration: none;
     overflow-wrap: anywhere;
+  }
+
+  .card-links a:hover {
+    border-color: var(--color-accent);
   }
 
   .card-cv {
     display: inline-block;
-    margin-top: 0.6rem;
-    font-weight: 600;
+    margin-top: 0.9rem;
+    font-weight: 700;
+    color: var(--color-accent-2);
   }
 
   .visually-hidden {
@@ -480,17 +627,34 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     white-space: nowrap;
   }
 
+  @keyframes pulse {
+    0% {
+      transform: scale(0.9);
+      opacity: 0.8;
+    }
+
+    100% {
+      transform: scale(1.45);
+      opacity: 0;
+    }
+  }
+
+  @keyframes card-in {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+  }
+
   @media (min-width: 768px) {
     .place-panel {
       left: auto;
-      top: 4rem;
+      top: 4.5rem;
       right: 0.75rem;
-      bottom: 4.5rem;
-      width: 24rem;
-      max-height: none;
-      border-radius: 1rem;
-      height: fit-content;
-      max-height: calc(100dvh - 9rem);
+      bottom: auto;
+      width: 26rem;
+      max-height: calc(100dvh - 10rem);
+      border-radius: 1.4rem;
     }
   }
 
@@ -509,22 +673,23 @@ const cvUrl = getRelativeLocaleUrl(lang, 'cv/');
     height: auto;
     overflow: visible;
     background: none;
-    padding: 6rem 0 5rem;
+    padding: 9rem 1rem 6rem;
   }
 
+  :global(html:not(.js)) .map::after,
   :global(html:not(.js)) .map-viewport {
     display: none;
   }
 
   :global(html:not(.js)) .place-panel {
-    position: static;
-    box-shadow: none;
+    position: relative;
     max-width: 40rem;
     max-height: none;
     width: auto;
     margin: 0 auto;
+    border-radius: 1.4rem;
     display: grid;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
   :global(html:not(.js)) .quick-cv {

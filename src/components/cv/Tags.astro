@@ -23,9 +23,20 @@ const { items } = Astro.props;
   }
 
   li {
-    font-size: 0.85rem;
-    padding: 0.15em 0.6em;
-    border: 1px solid color-mix(in srgb, var(--color-accent) 40%, transparent);
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.2em 0.7em;
     border-radius: 999px;
+    color: #c9f7ea;
+    background: rgb(52 227 180 / 0.1);
+    border: 1px solid rgb(52 227 180 / 0.28);
+  }
+
+  @media print {
+    li {
+      color: inherit;
+      background: none;
+      border-color: #bbb;
+    }
   }
 </style>

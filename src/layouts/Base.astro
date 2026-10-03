@@ -1,4 +1,6 @@
 ---
+import '@fontsource-variable/inter';
+import '@fontsource-variable/space-grotesk';
 import { getRelativeLocaleUrl } from 'astro:i18n';
 import { languages, type Lang, type UiKey } from '../i18n/ui';
 import { getLang, useTranslations } from '../i18n/utils';
@@ -56,15 +58,27 @@ const base = import.meta.env.BASE_URL;
 </html>
 
 <style is:global>
+  /* Kierunek wizualny: „nocna wyspa”. Ciemne tło, miętowy i bursztynowy akcent, wyraźne karty. */
   :root {
-    --color-bg: #f7f5f0;
-    --color-text: #1d1d1f;
-    --color-accent: #0b6e4f;
-    --color-muted: #55555a;
+    --color-bg: #0a1120;
+    --color-surface: #111b2f;
+    --color-surface-2: #182541;
+    --color-border: rgb(255 255 255 / 0.09);
+    --color-text: #e9eef8;
+    --color-muted: #a6b3cb;
+    --color-accent: #34e3b4;
+    --color-accent-2: #ffb547;
+    --color-accent-3: #9b8cff;
+    --color-on-accent: #04261c;
+    --gradient-brand: linear-gradient(120deg, #34e3b4 0%, #6fd3ff 45%, #9b8cff 100%);
+    --shadow-lg: 0 18px 50px rgb(0 0 0 / 0.45);
+    --radius: 1.1rem;
+    --font-display: 'Space Grotesk Variable', system-ui, sans-serif;
+    --font-body: 'Inter Variable', system-ui, sans-serif;
     --space: clamp(1rem, 2vw + 0.5rem, 2rem);
-    color-scheme: light;
-    font-family: system-ui, sans-serif;
-    line-height: 1.5;
+    color-scheme: dark;
+    font-family: var(--font-body);
+    line-height: 1.55;
   }
 
   *,
@@ -76,17 +90,38 @@ const base = import.meta.env.BASE_URL;
   body {
     margin: 0;
     min-height: 100dvh;
-    background: var(--color-bg);
+    background:
+      radial-gradient(60rem 40rem at 85% -10%, rgb(155 140 255 / 0.18), transparent 60%),
+      radial-gradient(50rem 35rem at -10% 10%, rgb(52 227 180 / 0.14), transparent 60%),
+      var(--color-bg);
     color: var(--color-text);
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 
   a {
     color: var(--color-accent);
+    text-underline-offset: 0.18em;
+  }
+
+  :focus-visible {
+    outline: 3px solid var(--color-accent-2);
+    outline-offset: 2px;
   }
 
   .skip-link {
     position: absolute;
     left: -9999px;
+    z-index: 100;
+    padding: 0.5em 1em;
+    border-radius: 0.5rem;
+    background: var(--color-accent);
+    color: var(--color-on-accent);
   }
 
   .skip-link:focus {
@@ -100,15 +135,46 @@ const base = import.meta.env.BASE_URL;
     padding: var(--space);
   }
 
+  .site-header a {
+    display: inline-block;
+    padding: 0.4em 0.95em;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: rgb(17 27 47 / 0.8);
+    backdrop-filter: blur(10px);
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 0.9rem;
+    text-decoration: none;
+  }
+
+  .site-header a:hover {
+    border-color: var(--color-accent);
+  }
+
   @page {
     margin: 12mm;
   }
 
+  /* Wydruk zawsze jasny i oszczędny w tuszu. */
   @media print {
     :root {
       --color-bg: #fff;
+      --color-surface: #fff;
+      --color-surface-2: #f3f4f6;
+      --color-border: #d6d9de;
+      --color-text: #111;
+      --color-muted: #555;
+      --color-accent: #0b6e4f;
+      --color-on-accent: #fff;
+      --shadow-lg: none;
+      color-scheme: light;
       font-size: 10pt;
       --space: 0.5rem;
+    }
+
+    body {
+      background: #fff;
     }
 
     .site-header,
@@ -122,6 +188,7 @@ const base = import.meta.env.BASE_URL;
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
     }
   }
