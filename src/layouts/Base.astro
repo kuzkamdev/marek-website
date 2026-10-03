@@ -1,0 +1,95 @@
+---
+import { getRelativeLocaleUrl } from 'astro:i18n';
+import { languages, type Lang } from '../i18n/ui';
+import { getLang, useTranslations } from '../i18n/utils';
+
+const lang: Lang = getLang(Astro.currentLocale);
+const t = useTranslations(lang);
+const otherLangs = (Object.keys(languages) as Lang[]).filter((l) => l !== lang);
+const base = import.meta.env.BASE_URL;
+---
+
+<!doctype html>
+<html lang={lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={t('meta.description')} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    {(Object.keys(languages) as Lang[]).map((l) => (
+      <link rel="alternate" hreflang={l} href={new URL(getRelativeLocaleUrl(l), Astro.site)} />
+    ))}
+    <title>{t('meta.title')}</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">
+      {t('skip.toMain')}
+    </a>
+    <header class="site-header">
+      <nav aria-label={t('lang.switch')}>
+        {otherLangs.map((l) => (
+          <a href={getRelativeLocaleUrl(l)} hreflang={l} lang={l} data-testid="lang-switch">
+            {languages[l]}
+          </a>
+        ))}
+      </nav>
+    </header>
+    <main id="main">
+      <slot />
+    </main>
+  </body>
+</html>
+
+<style is:global>
+  :root {
+    --color-bg: #f7f5f0;
+    --color-text: #1d1d1f;
+    --color-accent: #0b6e4f;
+    --space: clamp(1rem, 2vw + 0.5rem, 2rem);
+    color-scheme: light;
+    font-family: system-ui, sans-serif;
+    line-height: 1.5;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    min-height: 100dvh;
+    background: var(--color-bg);
+    color: var(--color-text);
+  }
+
+  a {
+    color: var(--color-accent);
+  }
+
+  .skip-link {
+    position: absolute;
+    left: -9999px;
+  }
+
+  .skip-link:focus {
+    left: var(--space);
+    top: var(--space);
+  }
+
+  .site-header {
+    display: flex;
+    justify-content: flex-end;
+    padding: var(--space);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+</style>
