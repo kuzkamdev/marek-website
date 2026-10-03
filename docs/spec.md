@@ -84,3 +84,4 @@
 | 2026-10-03 | Szybkie CV pod `/cv/` i `/en/cv/`; bez telefonu, klienci anonimowo, subtelne zdjęcie; na telefonie kontakt zaraz pod nagłówkiem; wersja do druku mieści się na 1 stronie A4. |
 | 2026-10-03 | Etap 3, szkic mapy: wyspa SVG z 5 miejscami, przesuwanie/zoom bez bibliotek (pointer events), karty miejsc, kotwice `#place-…`; bez JS lista miejsc. |
 | 2026-10-03 | Feedback Marka: wygląd zbyt minimalistyczny. Nowy kierunek „nocna wyspa” (ciemny motyw, akcenty, animacje mapy) wprowadzony już w etapie 3 zamiast w etapie 5. Wydruk CV pozostaje jasny. |
+| 2026-10-03 | Feedback Marka: wyspa i woda zbyt prymitywne. Mapa przerysowana jako ilustrowana mapa o zmierzchu (organiczny brzeg, płycizny i izobaty, góra, jezioro, lasy, budynki przy miejscach, chmury, róża wiatrów); ścieżka, ruch i efekt najechania bez zmian. Geometria liczona w czasie budowania w `src/data/island.ts`. |
