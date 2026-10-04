@@ -29,6 +29,7 @@ Projekt jest też ćwiczeniem dobrych praktyk pracy z Claude Code.
 - `src/data/profile.ts`: treści profilu (CV, projekty, kontakt) dla `pl` i `en`; typ `Profile` wymusza ten sam kształt. Treści zmieniamy tylko tutaj.
 - `src/data/places.ts`: miejsca na mapie (pozycje w układzie świata 1600×1000, ikony) i treści kart budowane z `profile.ts`.
 - `src/components/map/`: `IslandMap.astro` (strona główna: mapa, karty, sterowanie) i `IslandArt.astro` (grafika SVG; zmiana wyglądu wyspy nie wymaga zmian w logice).
+- `src/data/island.ts`: geometria wyspy (brzeg, warstwy terenu, góra, jezioro, lasy, ścieżka) liczona w czasie budowania z ziarnem, więc wynik jest powtarzalny. Lasy omijają miejsca, budynki i ścieżkę; po przesunięciu miejsca w `places.ts` sprawdź zrzut całej mapy.
 - `src/scripts/panzoom.ts`: przesuwanie i zoom (mysz, dotyk, szczypanie, kółko) bez zewnętrznych bibliotek.
 - `src/i18n/ui.ts`: słownik tekstów UI dla obu języków; każdy klucz musi istnieć w `pl` i `en` (wymusza to typ).
 - `src/layouts/Base.astro`: wspólny szkielet HTML, przełącznik języka, globalne style i tokeny CSS (`--color-*`, `--gradient-brand`, `--font-*`). Kolory zmieniamy przez tokeny, nie wpisujemy ich na sztywno w komponentach (wyjątek: grafika SVG wyspy).
